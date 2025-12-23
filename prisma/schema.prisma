@@ -1,0 +1,93 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// --------------------------------------
+// Modelos Obrigatórios para o NextAuth
+// (Account, Session, User, VerificationToken)
+// --------------------------------------
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model User {
+  id            String       @id @default(cuid())
+  name          String?
+  email         String?      @unique
+  emailVerified DateTime?
+  image         String?
+  accounts      Account[]
+  sessions      Session[]
+  
+  helicopters   Helicopter[] 
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+enum AlarmColor {
+  GREEN
+  YELLOW_NOT_CONFIRMED
+  YELLOW_CONFIRMED
+  RED_NOT_CONFIRMED
+  RED_CONFIRMED
+}
+
+model Helicopter {
+  id        String   @id @default(cuid())
+  prefix    String 
+  model     String  
+  company   String   
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  alarms    Alarm[]
+}
+
+
+model Alarm {
+  id          String     @id @default(cuid())
+  description String
+  color       AlarmColor
+  createdAt   DateTime   @default(now())
+
+  helicopterId String
+  helicopter   Helicopter @relation(fields: [helicopterId], references: [id], onDelete: Cascade)
+}
