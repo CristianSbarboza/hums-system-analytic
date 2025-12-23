@@ -12,7 +12,7 @@ export default async function Dashboard() {
   if (!session) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-slate-50 gap-6">
-        <h1 className="text-4xl font-extrabold text-slate-800 tracking-tight">HUMS System Analitic</h1>
+        <h1 className="text-4xl font-extrabold text-slate-800 tracking-tight">HUMS System Analytic</h1>
         <form action={async () => { "use server"; await signIn("google") }}>
           <button className="bg-red-600 border border-slate-300 text-gray-200 px-6 py-3 rounded-lg font-semibold shadow-sm hover:bg-red-600 transition cursor-pointer">
             Entre com o Google
@@ -34,7 +34,7 @@ export default async function Dashboard() {
   return (
     <div className="min-h-screen bg-slate-50 pb-20">
       <header className="bg-red-600 border-b border-slate-200 px-6 py-4 flex justify-between items-center sticky top-0 z-10">
-        <h1 className="text-xl font-bold text-gray-200">HUMS System Analitic</h1>
+        <h1 className="text-xl font-bold text-gray-200">HUMS System Analytic</h1>
         <div className="flex items-center gap-4">
           <span className="text-sm text-gray-200 hidden md:inline">Olá, {session.user?.name}</span>
           <form action={async () => { "use server"; await signOut() }}>
