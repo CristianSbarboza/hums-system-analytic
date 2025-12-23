@@ -4,7 +4,8 @@ import { AlarmForm } from '@/components/alarm-form';
 import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
 import { deleteHelicopter } from '@/actions/helicopter';
-import { deleteAlarm } from '@/actions/alarm'; // Importando a action de deletar alarme
+import { deleteAlarm } from '@/actions/alarm';
+import { Trash2 } from 'lucide-react'; // Importando o ícone
 
 // Mantendo o TEU padrão de cores (Inglês - Padrão do Banco)
 const colorStyles: Record<string, string> = {
@@ -37,11 +38,21 @@ export default async function HelicopterPage(props: PageProps) {
 
   if (!helicopter) return notFound();
 
+  // --- CORREÇÃO DE TYPESCRIPT AQUI ---
+  // Extraímos o tipo de um único alarme
+  type AlarmType = (typeof helicopter.alarms)[number];
+  // Definimos o formato do objeto final
+  type GroupedAlarms = Record<string, AlarmType[]>;
+
   // 2. Lógica para Agrupar por Dia
-  const alarmsByDate = helicopter.alarms.reduce(
-    (groups: Record<string, typeof helicopter.alarms>, alarm) => {
+  const alarmsByDate = helicopter.alarms.reduce<GroupedAlarms>(
+    (groups, alarm) => {
       const date = alarm.createdAt.toLocaleDateString('pt-BR');
-      if (!groups[date]) groups[date] = [];
+
+      if (!groups[date]) {
+        groups[date] = [];
+      }
+
       groups[date].push(alarm);
       return groups;
     },
@@ -76,8 +87,9 @@ export default async function HelicopterPage(props: PageProps) {
           >
             <button
               type='submit'
-              className='text-sm text-red-600 border border-red-200 px-3 py-1.5 rounded bg-red-50 hover:bg-red-100 transition'
+              className='text-sm text-red-600 border border-red-200 px-3 py-1.5 rounded bg-red-50 hover:bg-red-100 transition flex items-center gap-2'
             >
+              <Trash2 size={16} />
               Excluir Helicóptero
             </button>
           </form>
@@ -102,11 +114,13 @@ export default async function HelicopterPage(props: PageProps) {
                 key={date}
                 className='relative pl-6 border-l-2 border-slate-300'
               >
-                <div className='absolute -left- top-0 w-4 h-4 rounded-full bg-slate-400 border-2 border-slate-50'></div>
-                .
+                {/* Corrigi o CSS da bolinha aqui: -left-[9px] */}
+                <div className='absolute -left-2.25 top-0 w-4 h-4 rounded-full bg-slate-400 border-2 border-slate-50'></div>
+
                 <h4 className='text-sm font-bold text-slate-500 mb-3'>
                   {date}
                 </h4>
+
                 <div className='space-y-3'>
                   {alarmsByDate[date].map(alarm => (
                     <div
@@ -135,10 +149,10 @@ export default async function HelicopterPage(props: PageProps) {
                         >
                           <button
                             type='submit'
-                            className='bg-white/60 hover:bg-red-500 hover:text-white text-red-600 rounded-full w-6 h-6 flex items-center justify-center shadow-sm text-xs font-bold transition-colors'
+                            className='bg-white/80 hover:bg-red-500 hover:text-white text-red-600 rounded-full w-7 h-7 flex items-center justify-center shadow-sm transition-colors'
                             title='Excluir evento'
                           >
-                            ✕
+                            <Trash2 size={14} />
                           </button>
                         </form>
                       </div>
