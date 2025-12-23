@@ -5,9 +5,8 @@ import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
 import { deleteHelicopter } from '@/actions/helicopter';
 import { deleteAlarm } from '@/actions/alarm';
-import { Trash2 } from 'lucide-react'; // Importando o ícone
+import { Trash2 } from 'lucide-react';
 
-// Mantendo o TEU padrão de cores (Inglês - Padrão do Banco)
 const colorStyles: Record<string, string> = {
   GREEN: 'bg-green-50 border-green-200 text-green-800',
   YELLOW_NOT_CONFIRMED:
@@ -28,7 +27,6 @@ export default async function HelicopterPage(props: PageProps) {
   const params = await props.params;
   const helicopterId = params.id;
 
-  // 1. Buscar dados no banco
   const helicopter = await db.helicopter.findUnique({
     where: { id: helicopterId },
     include: {
@@ -38,15 +36,15 @@ export default async function HelicopterPage(props: PageProps) {
 
   if (!helicopter) return notFound();
 
-  // --- CORREÇÃO DE TYPESCRIPT AQUI ---
-  // Extraímos o tipo de um único alarme
+  // --- TIPAGEM EXPLÍCITA (Para passar no Build) ---
   type AlarmType = (typeof helicopter.alarms)[number];
-  // Definimos o formato do objeto final
   type GroupedAlarms = Record<string, AlarmType[]>;
 
-  // 2. Lógica para Agrupar por Dia
-  const alarmsByDate = helicopter.alarms.reduce<GroupedAlarms>(
-    (groups, alarm) => {
+  // AQUI ESTÁ A CORREÇÃO DEFINITIVA:
+  // 1. Tipamos o argumento 'groups' explicitamente: (groups: GroupedAlarms, ...)
+  // 2. Tipamos o valor inicial explicitamente: {} as GroupedAlarms
+  const alarmsByDate = helicopter.alarms.reduce(
+    (groups: GroupedAlarms, alarm) => {
       const date = alarm.createdAt.toLocaleDateString('pt-BR');
 
       if (!groups[date]) {
@@ -56,7 +54,7 @@ export default async function HelicopterPage(props: PageProps) {
       groups[date].push(alarm);
       return groups;
     },
-    {},
+    {} as GroupedAlarms,
   );
 
   return (
@@ -78,7 +76,6 @@ export default async function HelicopterPage(props: PageProps) {
             </h1>
           </div>
 
-          {/* Botão de Excluir Helicóptero */}
           <form
             action={async () => {
               'use server';
@@ -114,8 +111,8 @@ export default async function HelicopterPage(props: PageProps) {
                 key={date}
                 className='relative pl-6 border-l-2 border-slate-300'
               >
-                {/* Corrigi o CSS da bolinha aqui: -left-[9px] */}
-                <div className='absolute -left-2.25 top-0 w-4 h-4 rounded-full bg-slate-400 border-2 border-slate-50'></div>
+                {/* Bolinha na timeline */}
+                <div className='absolute -left-2 top-0 w-4 h-4 rounded-full bg-slate-400 border-2 border-slate-50'></div>
 
                 <h4 className='text-sm font-bold text-slate-500 mb-3'>
                   {date}
@@ -139,7 +136,6 @@ export default async function HelicopterPage(props: PageProps) {
                         </span>
                       </div>
 
-                      {/* Botão de Excluir Alarme */}
                       <div className='absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition duration-200'>
                         <form
                           action={async () => {
