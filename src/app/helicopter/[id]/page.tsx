@@ -36,15 +36,17 @@ export default async function HelicopterPage(props: PageProps) {
 
   if (!helicopter) return notFound();
 
-  // --- TIPAGEM EXPLÍCITA (Para passar no Build) ---
-  type AlarmType = (typeof helicopter.alarms)[number];
+  // --- SOLUÇÃO FINAL DE TIPAGEM ---
+  
+  // 1. Extraímos o tipo de UM alarme (Item do Array)
+  type AlarmType = typeof helicopter.alarms[number];
+  
+  // 2. Definimos o tipo do Acumulador (Objeto Final)
   type GroupedAlarms = Record<string, AlarmType[]>;
 
-  // AQUI ESTÁ A CORREÇÃO DEFINITIVA:
-  // 1. Tipamos o argumento 'groups' explicitamente: (groups: GroupedAlarms, ...)
-  // 2. Tipamos o valor inicial explicitamente: {} as GroupedAlarms
   const alarmsByDate = helicopter.alarms.reduce(
-    (groups: GroupedAlarms, alarm) => {
+    // AQUI: Tipamos AMBOS os parâmetros. Sem chutar nada.
+    (groups: GroupedAlarms, alarm: AlarmType) => {
       const date = alarm.createdAt.toLocaleDateString('pt-BR');
 
       if (!groups[date]) {
@@ -54,7 +56,8 @@ export default async function HelicopterPage(props: PageProps) {
       groups[date].push(alarm);
       return groups;
     },
-    {} as GroupedAlarms,
+    // Valor inicial castado
+    {} as GroupedAlarms
   );
 
   return (
@@ -106,12 +109,12 @@ export default async function HelicopterPage(props: PageProps) {
           </p>
         ) : (
           <div className='space-y-8'>
-            {Object.keys(alarmsByDate).map(date => (
+            {Object.keys(alarmsByDate).map((date) => (
               <div
                 key={date}
                 className='relative pl-6 border-l-2 border-slate-300'
               >
-                {/* Bolinha na timeline */}
+                {/* Bolinha alinhada corretamente com -left-2 */}
                 <div className='absolute -left-2 top-0 w-4 h-4 rounded-full bg-slate-400 border-2 border-slate-50'></div>
 
                 <h4 className='text-sm font-bold text-slate-500 mb-3'>
@@ -119,7 +122,7 @@ export default async function HelicopterPage(props: PageProps) {
                 </h4>
 
                 <div className='space-y-3'>
-                  {alarmsByDate[date].map(alarm => (
+                  {alarmsByDate[date].map((alarm) => (
                     <div
                       key={alarm.id}
                       className={`p-4 rounded-lg border ${
